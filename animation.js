@@ -102,7 +102,7 @@ function drawGhosts() {
     ctx.shadowColor = "rgba(255, 0, 0, 0.5)";
     ctx.shadowBlur = 20;
 
-    ctx.fillStyle = "#ff0000"; // Red for devils
+    ctx.fillStyle = "#ff0000";
     ctx.beginPath();
     ctx.arc(centerX, centerY, tileSize / 2.5, 0, Math.PI * 2);
     ctx.fill();
@@ -150,6 +150,42 @@ function drawGhosts() {
   });
 }
 
+const teleportTiles = [];
+
+function generateTeleportTiles() {
+  teleportTiles.length = 0;
+  for (let i = 0; i < 5; i++) {
+    let newX, newY;
+    do {
+      newX = Math.floor(Math.random() * cols);
+      newY = Math.floor(Math.random() * rows);
+    } while (
+      maze[newY][newX] === 1 ||
+      (newX === 0 && newY === 0) ||
+      (newX === cols - 1 && newY === rows - 1)
+    );
+    teleportTiles.push({ x: newX, y: newY });
+  }
+}
+
+generateTeleportTiles();
+
+function drawTeleportTiles() {
+  teleportTiles.forEach((tile) => {
+    const centerX = tile.x * tileSize + tileSize / 2;
+    const centerY = tile.y * tileSize + tileSize / 2;
+
+    ctx.shadowColor = "rgba(0, 0, 255, 0.5)";
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = "blue";
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowColor = "transparent";
+  });
+}
+
 function moveGhosts() {
   ghosts.forEach((ghost) => {
     ghost.moveCounter++;
@@ -157,10 +193,10 @@ function moveGhosts() {
     if (ghost.moveCounter > 30) {
       ghost.moveCounter = 0;
       const possibleDirections = [
-        { x: 0, y: -1 },
-        { x: 0, y: 1 },
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
+        { x: 0, y: -1 }, // Up
+        { x: 0, y: 1 }, // Down
+        { x: -1, y: 0 }, // Left
+        { x: 1, y: 0 }, // Right
       ];
 
       let direction =
@@ -218,13 +254,62 @@ window.addEventListener("keydown", (event) => {
   checkGameOver();
 });
 
+if (player.x === 2 && player.y === 2) {
+  let newX, newY;
+  do {
+    newX = Math.floor(Math.random() * cols);
+    newY = Math.floor(Math.random() * rows);
+  } while (
+    maze[newY][newX] === 1 ||
+    (newX === 0 && newY === 0) ||
+    (newX === cols - 1 && newY === rows - 1)
+  );
+  player.x = newX;
+  player.y = newY;
+  generateMaze();
+}
+
+function generateMaze() {
+  for (let i = 0; i < rows; i++) {
+    maze[i] = [];
+    for (let j = 0; j < cols; j++) {
+      maze[i][j] = Math.random() < 0.2 ? 1 : 0; // 20% chance of wall
+    }
+  }
+  generateTeleportTiles();
+}
+
+function checkTeleportation() {
+  for (let tile of teleportTiles) {
+    if (player.x === tile.x && player.y === tile.y) {
+      // Teleport
+      let newX, newY;
+      do {
+        newX = Math.floor(Math.random() * cols);
+        newY = Math.floor(Math.random() * rows);
+      } while (
+        maze[newY][newX] === 1 ||
+        (newX === 0 && newY === 0) ||
+        (newX === cols - 1 && newY === rows - 1)
+      );
+      player.x = newX;
+      player.y = newY;
+
+      generateMaze();
+      break;
+    }
+  }
+}
+
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawMaze();
+  drawTeleportTiles(); // Draw teleportation tiles
   drawHuman(player.x, player.y);
   drawGhosts();
   moveGhosts();
   checkGameOver();
+  checkTeleportation(); // Check for teleportation
   requestAnimationFrame(gameLoop);
 }
 
