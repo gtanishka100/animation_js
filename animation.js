@@ -3,6 +3,7 @@ const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
 const tileSize = Math.min(canvas.width, canvas.height) / 15;
 
 let cols = Math.floor(canvas.width / tileSize);
@@ -43,6 +44,69 @@ for (let i = 0; i < 6; i++) {
     direction: Math.random() < 0.5 ? 1 : -1,
     moveCounter: 0,
   });
+}
+
+let loadingProgress = 0;
+let loadingDevilX = 0;
+let gameStarted = false;
+let loadingComplete = false;
+
+const startButton = document.getElementById("startButton");
+startButton.addEventListener("click", () => {
+  startButton.style.display = "none";
+  gameStarted = true;
+  loadGame();
+});
+
+function loadGame() {
+  if (loadingProgress < 100) {
+    loadingProgress += 1;
+    loadingDevilX = (canvas.width / 100) * loadingProgress;
+
+    drawLoadingScreen();
+
+    setTimeout(loadGame, 50);
+  } else {
+    loadingComplete = true;
+    gameLoop();
+  }
+}
+
+function drawLoadingScreen() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#FFF";
+  ctx.fillRect(
+    50,
+    canvas.height / 2,
+    (loadingProgress * (canvas.width - 100)) / 100,
+    20
+  );
+
+  drawDevil(loadingDevilX, canvas.height / 2 - 40);
+
+  ctx.fillStyle = "#FFF";
+  ctx.font = "30px Arial";
+  ctx.fillText("Loading...", canvas.width / 2 - 70, canvas.height / 2 + 60);
+}
+
+function drawDevil(x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, 15, 0, Math.PI * 2);
+  ctx.fillStyle = "red";
+  ctx.fill();
+
+  ctx.fillStyle = "red";
+  ctx.fillRect(x - 10, y + 15, 20, 30);
+  ctx.fillStyle = "black";
+  ctx.beginPath();
+  ctx.moveTo(x - 12, y - 10);
+  ctx.lineTo(x - 6, y - 20);
+  ctx.lineTo(x, y - 10);
+  ctx.moveTo(x + 12, y - 10);
+  ctx.lineTo(x + 6, y - 20);
+  ctx.lineTo(x, y - 10);
+  ctx.fill();
 }
 
 function drawMaze() {
@@ -308,16 +372,18 @@ function checkWin() {
 }
 
 function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawMaze();
-  drawTeleportTiles();
-  drawTags();
-  drawHuman(player.x, player.y);
-  drawGhosts();
-  moveGhosts();
-  checkGameOver();
-  checkTeleportation();
-  checkWin();
-  requestAnimationFrame(gameLoop);
+  if (loadingComplete) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawMaze();
+    drawTeleportTiles();
+    drawTags();
+    drawHuman(player.x, player.y);
+    drawGhosts();
+    moveGhosts();
+    checkTeleportation();
+    checkGameOver();
+    checkWin();
+    requestAnimationFrame(gameLoop);
+  }
 }
 gameLoop();
