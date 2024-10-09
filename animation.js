@@ -186,6 +186,17 @@ function drawTeleportTiles() {
   });
 }
 
+function drawTags() {
+  ctx.fillStyle = "black";
+  ctx.font = "18px Arial";
+
+  ctx.fillText("Start", 0, tileSize / 2);
+
+  const exitX = (cols - 1) * tileSize;
+  const exitY = (rows - 1) * tileSize;
+  ctx.fillText("Exit", exitX + tileSize / 6, exitY + tileSize / 2);
+}
+
 function moveGhosts() {
   ghosts.forEach((ghost) => {
     ghost.moveCounter++;
@@ -300,6 +311,7 @@ function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawMaze();
   drawTeleportTiles();
+  drawTags();
   drawHuman(player.x, player.y);
   drawGhosts();
   moveGhosts();
@@ -308,5 +320,4 @@ function gameLoop() {
   checkWin();
   requestAnimationFrame(gameLoop);
 }
-
 gameLoop();
