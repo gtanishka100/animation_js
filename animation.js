@@ -254,21 +254,6 @@ window.addEventListener("keydown", (event) => {
   checkGameOver();
 });
 
-if (player.x === 2 && player.y === 2) {
-  let newX, newY;
-  do {
-    newX = Math.floor(Math.random() * cols);
-    newY = Math.floor(Math.random() * rows);
-  } while (
-    maze[newY][newX] === 1 ||
-    (newX === 0 && newY === 0) ||
-    (newX === cols - 1 && newY === rows - 1)
-  );
-  player.x = newX;
-  player.y = newY;
-  generateMaze();
-}
-
 function generateMaze() {
   for (let i = 0; i < rows; i++) {
     maze[i] = [];
@@ -301,15 +286,26 @@ function checkTeleportation() {
   }
 }
 
+const redTileX = cols - 1;
+const redTileY = rows - 1;
+
+function checkWin() {
+  if (player.x === redTileX && player.y === redTileY) {
+    alert("You Won!");
+    document.location.reload();
+  }
+}
+
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawMaze();
-  drawTeleportTiles(); // Draw teleportation tiles
+  drawTeleportTiles();
   drawHuman(player.x, player.y);
   drawGhosts();
   moveGhosts();
   checkGameOver();
-  checkTeleportation(); // Check for teleportation
+  checkTeleportation();
+  checkWin();
   requestAnimationFrame(gameLoop);
 }
 
